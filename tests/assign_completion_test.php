@@ -32,7 +32,6 @@ require_once($CFG->dirroot . '/mod/assign/tests/fixtures/testable_assign.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**

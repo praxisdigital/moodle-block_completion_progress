@@ -34,7 +34,6 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * General unit tests for block_completion_progress.
