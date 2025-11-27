@@ -27,11 +27,13 @@ namespace block_completion_progress;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/assign/locallib.php');
-require_once($CFG->dirroot.'/mod/assign/tests/fixtures/testable_assign.php');
+require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/mod/assign/tests/fixtures/testable_assign.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Assignment activity-related unit tests for Completion Progress block.
@@ -40,10 +42,9 @@ use block_completion_progress\defaults;
  * @copyright  2020 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assign_completion_test extends \block_completion_progress\tests\completion_testcase {
+final class assign_completion_test extends \block_completion_progress\tests\completion_testcase {
     /**
      * Test assignment completion state changes.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_assign_get_completion_state(): void {
         global $DB, $PAGE;
@@ -113,7 +114,6 @@ class assign_completion_test extends \block_completion_progress\tests\completion
 
     /**
      * Test completion determination in an Assignment activity with pass/fail enabled.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_assign_passfail(): void {
         $generator = $this->getDataGenerator();
@@ -124,7 +124,7 @@ class assign_completion_test extends \block_completion_progress\tests\completion
             'maxattempts' => -1,
             'attemptreopenmethod' => ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // The student must receive a grade to complete.
+            'completionusegrade' => 1, // The student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
             'teamsubmission' => 0,
         ]);
@@ -142,7 +142,10 @@ class assign_completion_test extends \block_completion_progress\tests\completion
         $item->update();
 
         $assign = new \mod_assign_testable_assign(
-            \context_module::instance($cm->id), $cm, $this->course);
+            \context_module::instance($cm->id),
+            $cm,
+            $this->course
+        );
 
         $teacher = $generator->create_and_enrol($this->course, 'editingteacher');
 
@@ -169,7 +172,6 @@ class assign_completion_test extends \block_completion_progress\tests\completion
 
     /**
      * Test completion determination in an Assignment activity with basic completion.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_assign_basic(): void {
         $generator = $this->getDataGenerator();
@@ -179,14 +181,17 @@ class assign_completion_test extends \block_completion_progress\tests\completion
             'maxattempts' => -1,
             'attemptreopenmethod' => ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionsubmit' => 1,        // Submission alone is enough to trigger completion.
+            'completionsubmit' => 1, // Submission alone is enough to trigger completion.
             'completionexpected' => time() - DAYSECS,
             'teamsubmission' => 0,
         ]);
         $cm = get_coursemodule_from_id('assign', $instance->cmid);
 
         $assign = new \mod_assign_testable_assign(
-            \context_module::instance($cm->id), $cm, $this->course);
+            \context_module::instance($cm->id),
+            $cm,
+            $this->course
+        );
 
         $teacher = $generator->create_and_enrol($this->course, 'editingteacher');
 
@@ -228,9 +233,8 @@ class assign_completion_test extends \block_completion_progress\tests\completion
      *
      * @param integer $requireallteammemberssubmit
      *
-     * @covers \block_completion_progress\completion_progress
-     * @dataProvider teamsubmission_provider
      */
+    #[DataProvider('teamsubmission_provider')]
     public function test_teamsubmission($requireallteammemberssubmit): void {
         $generator = $this->getDataGenerator();
 
@@ -245,7 +249,7 @@ class assign_completion_test extends \block_completion_progress\tests\completion
             'maxattempts' => -1,
             'attemptreopenmethod' => ASSIGN_ATTEMPT_REOPEN_METHOD_NONE,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // The student must receive a grade to complete.
+            'completionusegrade' => 1, // The student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
             'teamsubmission' => 1,
             'teamsubmissiongroupingid' => $grouping1->id,
@@ -266,7 +270,10 @@ class assign_completion_test extends \block_completion_progress\tests\completion
         $student3 = $generator->create_and_enrol($this->course, 'student');
 
         $assign = new \mod_assign_testable_assign(
-            \context_module::instance($cm->id), $cm, $this->course);
+            \context_module::instance($cm->id),
+            $cm,
+            $this->course
+        );
 
         if ($requireallteammemberssubmit == 0) {    // One-per-group.
             // Student 1 submits for Group 1.
@@ -286,7 +293,6 @@ class assign_completion_test extends \block_completion_progress\tests\completion
             $this->assert_progress_completion($student3, $cm, 'submitted');
             $this->grade_student($student3, $assign, $teacher, 75, 0);      // Pass.
             $this->assert_progress_completion($student3, $cm, COMPLETION_COMPLETE);
-
         } else {
             // Set the passing grade.
             $item = \grade_item::fetch([
@@ -362,12 +368,13 @@ class assign_completion_test extends \block_completion_progress\tests\completion
         $this->setUser($teacher);
 
         // Bump all timecreated and timemodified for this user back.
-        $DB->execute('UPDATE {assign_submission} ' .
+        $DB->execute(
+            'UPDATE {assign_submission} ' .
             'SET timecreated = timecreated - 1, timemodified = timemodified - 1 ' .
             'WHERE userid = :userid',
-            ['userid' => $student->id]);
+            ['userid' => $student->id]
+        );
 
-        $assign->testable_apply_grade_to_user((object) [ 'grade' => $grade ],
-            $student->id, $attempt);
+        $assign->testable_apply_grade_to_user((object)['grade' => $grade], $student->id, $attempt);
     }
 }

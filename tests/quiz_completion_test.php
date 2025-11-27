@@ -27,11 +27,13 @@ namespace block_completion_progress;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/quiz/lib.php');
-require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
+use mod_quiz\quiz_settings;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 if (!class_exists('mod_quiz\quiz_settings')) {
     // Moodle 4.1 or earlier.
@@ -46,7 +48,7 @@ if (!class_exists('mod_quiz\quiz_settings')) {
  * @copyright  2020 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class quiz_completion_test extends \block_completion_progress\tests\completion_testcase {
+final class quiz_completion_test extends \block_completion_progress\tests\completion_testcase {
     /**
      * A data provider supplying each of the possible quiz grade methods.
      * @return array
@@ -65,10 +67,8 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
      * pass/fail enabled.
      *
      * @param integer $grademethod
-     *
-     * @covers \block_completion_progress\completion_progress
-     * @dataProvider grademethod_provider
      */
+    #[DataProvider('grademethod_provider')]
     public function test_quiz_passfail($grademethod): void {
         $generator = $this->getDataGenerator();
 
@@ -76,11 +76,11 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
             'course' => $this->course->id,
             'grade' => 100,
             'sumgrades' => 100,
-            'layout' => '1,0',  // One question.
+            'layout' => '1,0', // One question.
             'attempts' => -1,
             'grademethod' => $grademethod,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // Student must receive a grade to complete.
+            'completionusegrade' => 1, // Student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('quiz', $instance->cmid);
@@ -148,10 +148,8 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
      * Test completion determination in an Assignment activity with basic completion.
      *
      * @param integer $grademethod
-     *
-     * @covers \block_completion_progress\completion_progress
-     * @dataProvider grademethod_provider
      */
+    #[DataProvider('grademethod_provider')]
     public function test_quiz_basic($grademethod): void {
         $generator = $this->getDataGenerator();
 
@@ -159,11 +157,11 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
             'course' => $this->course->id,
             'grade' => 100,
             'sumgrades' => 100,
-            'layout' => '1,0',  // One question.
+            'layout' => '1,0', // One question.
             'attempts' => -1,
             'grademethod' => $grademethod,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // Student must receive a grade to complete.
+            'completionusegrade' => 1, // Student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('quiz', $instance->cmid);
@@ -254,7 +252,10 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
 
         $quba = $attemptobj->get_question_usage();
         $quba->get_question_attempt(1)->manual_grade(
-                'Comment', $mark, FORMAT_HTML);
+            'Comment',
+            $mark,
+            FORMAT_HTML
+        );
         \question_engine::save_questions_usage_by_activity($quba);
 
         $update = new \stdClass();
@@ -266,7 +267,7 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
         if (class_exists('mod_quiz\grade_calculator')) {
             $attemptobj->get_quizobj()->get_grade_calculator()->recompute_final_grade($attemptobj->get_userid());
         } else {
-            quiz_save_best_grade($attemptobj->get_quiz(), $attemptobj->get_userid());
+            quiz_settings::create($attemptobj->get_quiz()->id)->get_grade_calculator()->recompute_final_grade($attemptobj->get_userid());
         }
 
         $this->setUser(null);

@@ -28,8 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
-require_once($CFG->dirroot.'/blocks/completion_progress/block_completion_progress.php');
+require_once($CFG->dirroot . '/blocks/moodleblock.class.php');
+require_once($CFG->dirroot . '/blocks/completion_progress/block_completion_progress.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
@@ -41,7 +41,7 @@ use block_completion_progress\defaults;
  * @copyright  2021 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class overview_test extends \advanced_testcase {
+final class overview_test extends \advanced_testcase {
     /**
      * Teacher users.
      * @var array
@@ -75,6 +75,8 @@ class overview_test extends \advanced_testcase {
      * Create a course and add enrol users to it.
      */
     protected function setUp(): void {
+        parent::setUp();
+
         $this->resetAfterTest(true);
 
         set_config('enablecompletion', 1);
@@ -92,8 +94,15 @@ class overview_test extends \advanced_testcase {
 
         for ($i = 0; $i < self::STUDENT_COUNT; $i++) {
             $status = $i >= 3 ? ENROL_USER_SUSPENDED : null;
-            $this->students[$i] = $generator->create_and_enrol($this->course, 'student',
-                null, 'manual', 0, 0, $status);
+            $this->students[$i] = $generator->create_and_enrol(
+                $this->course,
+                'student',
+                null,
+                'manual',
+                0,
+                0,
+                $status
+            );
 
             // Students are put into even/odd groups.
             $generator->create_group_member([
@@ -120,7 +129,6 @@ class overview_test extends \advanced_testcase {
 
     /**
      * Test optional settings' effects on the overview table.
-     * @covers \block_completion_progress\table\overview
      */
     public function test_overview_options(): void {
         global $DB, $PAGE;
@@ -140,7 +148,7 @@ class overview_test extends \advanced_testcase {
             'configdata' => base64_encode(serialize((object)[
                 'orderby' => defaults::ORDERBY,
                 'longbars' => defaults::LONGBARS,
-                'progressBarIcons' => 0,    // Non-default.
+                'progressBarIcons' => 0, // Non-default.
                 'showpercentage' => defaults::SHOWPERCENTAGE,
                 'progressTitle' => "",
                 'activitiesincluded' => defaults::ACTIVITIESINCLUDED,
@@ -168,8 +176,8 @@ class overview_test extends \advanced_testcase {
         $table->out(30, false);
         $text = ob_get_clean();
 
-        $this->assertStringContainsString('<input id="user'.$this->students[0]->id.'" ', $text);
-        $this->assertStringNotContainsString('<input id="user'.$this->students[3]->id.'" ', $text);
+        $this->assertStringContainsString('<input id="user' . $this->students[0]->id . '" ', $text);
+        $this->assertStringNotContainsString('<input id="user' . $this->students[3]->id . '" ', $text);
         $this->assertStringNotContainsString('col-timeaccess', $text);
         $this->assertStringNotContainsString('barWithIcons', $text);
 
@@ -185,8 +193,8 @@ class overview_test extends \advanced_testcase {
         $table->out(30, false);
         $text = ob_get_clean();
 
-        $this->assertStringContainsString('<input id="user'.$this->students[0]->id.'" ', $text);
-        $this->assertStringContainsString('<input id="user'.$this->students[3]->id.'" ', $text);
+        $this->assertStringContainsString('<input id="user' . $this->students[0]->id . '" ', $text);
+        $this->assertStringContainsString('<input id="user' . $this->students[3]->id . '" ', $text);
         $this->assertStringContainsString('col-timeaccess', $text);
         $this->assertStringContainsString('barWithIcons', $text);
 
@@ -199,15 +207,14 @@ class overview_test extends \advanced_testcase {
         $table->out(30, false);
         $text = ob_get_clean();
 
-        $this->assertStringContainsString('<input id="user'.$this->students[0]->id.'" ', $text);
-        $this->assertStringNotContainsString('<input id="user'.$this->students[1]->id.'" ', $text);
-        $this->assertStringContainsString('<input id="user'.$this->students[2]->id.'" ', $text);
-        $this->assertStringNotContainsString('<input id="user'.$this->students[3]->id.'" ', $text);
+        $this->assertStringContainsString('<input id="user' . $this->students[0]->id . '" ', $text);
+        $this->assertStringNotContainsString('<input id="user' . $this->students[1]->id . '" ', $text);
+        $this->assertStringContainsString('<input id="user' . $this->students[2]->id . '" ', $text);
+        $this->assertStringNotContainsString('<input id="user' . $this->students[3]->id . '" ', $text);
     }
 
     /**
      * Test that the overview table correctly sorts by progress.
-     * @covers \block_completion_progress\table\overview
      */
     public function test_overview_percentage_sort(): void {
         global $DB, $PAGE;
@@ -229,7 +236,7 @@ class overview_test extends \advanced_testcase {
             'configdata' => base64_encode(serialize((object)[
                 'orderby' => defaults::ORDERBY,
                 'longbars' => defaults::LONGBARS,
-                'progressBarIcons' => 0,    // Non-default.
+                'progressBarIcons' => 0, // Non-default.
                 'showpercentage' => defaults::SHOWPERCENTAGE,
                 'progressTitle' => "",
                 'activitiesincluded' => defaults::ACTIVITIESINCLUDED,
@@ -258,6 +265,7 @@ class overview_test extends \advanced_testcase {
         $completion->update_state($page1cm, COMPLETION_COMPLETE, $this->students[0]->id);
 
         $progress = (new completion_progress($this->course))->for_overview()->for_block_instance($blockinstance);
+        $progress->compute_overview_percentages(null);
         $table = new \block_completion_progress\table\overview($progress, [], 0, true);
         $table->set_sortdata([['sortby' => 'progress', 'sortorder' => SORT_DESC]]);
         $table->define_baseurl('/');
@@ -267,9 +275,9 @@ class overview_test extends \advanced_testcase {
         $text = ob_get_clean();
 
         // Student 2 then Student 0 then Student 1.
-        $student0pos = strpos($text, '<input id="user'.$this->students[0]->id.'" ');
-        $student1pos = strpos($text, '<input id="user'.$this->students[1]->id.'" ');
-        $student2pos = strpos($text, '<input id="user'.$this->students[2]->id.'" ');
+        $student0pos = strpos($text, '<input id="user' . $this->students[0]->id . '" ');
+        $student1pos = strpos($text, '<input id="user' . $this->students[1]->id . '" ');
+        $student2pos = strpos($text, '<input id="user' . $this->students[2]->id . '" ');
         $this->assertGreaterThan($student2pos, $student0pos, 'Student 2 > Student 0');
         $this->assertGreaterThan($student0pos, $student1pos, 'Student 0 > Student 1');
     }

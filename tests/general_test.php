@@ -28,12 +28,13 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
-require_once($CFG->dirroot.'/blocks/completion_progress/block_completion_progress.php');
+require_once($CFG->dirroot . '/blocks/moodleblock.class.php');
+require_once($CFG->dirroot . '/blocks/completion_progress/block_completion_progress.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * General unit tests for block_completion_progress.
@@ -42,7 +43,7 @@ use block_completion_progress\defaults;
  * @copyright  2017 onwards Nelson Moller  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class general_test extends \advanced_testcase {
+final class general_test extends \advanced_testcase {
     /**
      * Teacher users.
      * @var array
@@ -70,6 +71,8 @@ class general_test extends \advanced_testcase {
      * Create a course and add enrol users to it.
      */
     protected function setUp(): void {
+        parent::setUp();
+
         $this->resetAfterTest(true);
 
         set_config('enablecompletion', 1);
@@ -84,8 +87,15 @@ class general_test extends \advanced_testcase {
 
         for ($i = 0; $i < self::STUDENT_COUNT; $i++) {
             $status = $i >= 3 ? ENROL_USER_SUSPENDED : null;
-            $this->students[$i] = $generator->create_and_enrol($this->course, 'student',
-                null, 'manual', 0, 0, $status);
+            $this->students[$i] = $generator->create_and_enrol(
+                $this->course,
+                'student',
+                null,
+                'manual',
+                0,
+                0,
+                $status
+            );
         }
     }
 
@@ -106,7 +116,6 @@ class general_test extends \advanced_testcase {
 
     /**
      * Check that a student's excluded grade hides the activity from the student's progress bar.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_grade_excluded(): void {
         global $DB, $PAGE;
@@ -169,7 +178,6 @@ class general_test extends \advanced_testcase {
 
     /**
      * Test checking of pages at site-level or not.
-     * @covers \block_completion_progress
      */
     public function test_on_site_page(): void {
         global $PAGE;
@@ -219,7 +227,6 @@ class general_test extends \advanced_testcase {
 
     /**
      * Test that asynchronous course copy preserves all expected block instances.
-     * @covers \restore_completion_progress_block_task
      */
     public function test_course_copy(): void {
         global $DB;
@@ -240,7 +247,7 @@ class general_test extends \advanced_testcase {
             'configdata' => base64_encode(serialize((object)[
                 'orderby' => defaults::ORDERBY,
                 'longbars' => defaults::LONGBARS,
-                'progressBarIcons' => 0,    // Non-default.
+                'progressBarIcons' => 0, // Non-default.
                 'showpercentage' => defaults::SHOWPERCENTAGE,
                 'progressTitle' => "Instance 1",
                 'activitiesincluded' => defaults::ACTIVITIESINCLUDED,
@@ -259,7 +266,7 @@ class general_test extends \advanced_testcase {
             'configdata' => base64_encode(serialize((object)[
                 'orderby' => defaults::ORDERBY,
                 'longbars' => defaults::LONGBARS,
-                'progressBarIcons' => 0,    // Non-default.
+                'progressBarIcons' => 0, // Non-default.
                 'showpercentage' => defaults::SHOWPERCENTAGE,
                 'progressTitle' => "Instance 2",
                 'activitiesincluded' => defaults::ACTIVITIESINCLUDED,
@@ -267,7 +274,7 @@ class general_test extends \advanced_testcase {
         ];
         $generator->create_block('completion_progress', $block2data);
 
-        $mdata = new \stdClass;
+        $mdata = new \stdClass();
         $mdata->courseid = $this->course->id;
         $mdata->fullname = $this->course->fullname . ' Copy';
         $mdata->shortname = $this->course->shortname . ' Copy';
@@ -289,7 +296,7 @@ class general_test extends \advanced_testcase {
         }
 
         $now = time();
-        $task = \core\task\manager::get_next_adhoc_task($now);
+        $task = \core\task\manager::get_next_adhoc_task($now, classname: \core\task\asynchronous_copy_task::class);
         $this->assertInstanceOf('\\core\\task\\asynchronous_copy_task', $task);
         $this->expectOutputRegex("/Course copy/");
         $task->execute();
@@ -322,7 +329,6 @@ class general_test extends \advanced_testcase {
 
     /**
      * Test course modules view urls.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_view_urls(): void {
         global $DB, $PAGE;

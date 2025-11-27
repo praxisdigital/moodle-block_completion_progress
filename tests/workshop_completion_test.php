@@ -27,8 +27,8 @@ namespace block_completion_progress;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/workshop/locallib.php');
-require_once($CFG->dirroot.'/mod/workshop/tests/fixtures/testable.php');
+require_once($CFG->dirroot . '/mod/workshop/locallib.php');
+require_once($CFG->dirroot . '/mod/workshop/tests/fixtures/testable.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
@@ -40,10 +40,9 @@ use block_completion_progress\defaults;
  * @copyright  2020 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class workshop_completion_test extends \block_completion_progress\tests\completion_testcase {
+final class workshop_completion_test extends \block_completion_progress\tests\completion_testcase {
     /**
      * Test completion determination in a Workshop activity with pass/fail enabled.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_workshop_passfail(): void {
         $this->setAdminUser();
@@ -55,7 +54,7 @@ class workshop_completion_test extends \block_completion_progress\tests\completi
             'grade' => 80,
             'gradinggrade' => 20,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // The student must receive a grade to complete.
+            'completionusegrade' => 1, // The student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('workshop', $instance->cmid);
@@ -97,7 +96,6 @@ class workshop_completion_test extends \block_completion_progress\tests\completi
 
     /**
      * Test completion determination in an Workshop activity with basic completion.
-     * @covers \block_completion_progress\completion_progress
      */
     public function test_workshop_basic(): void {
         $this->setAdminUser();
@@ -109,7 +107,7 @@ class workshop_completion_test extends \block_completion_progress\tests\completi
             'grade' => 80,
             'gradinggrade' => 20,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // The student must receive a grade to complete.
+            'completionusegrade' => 1, // The student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('workshop', $instance->cmid);
