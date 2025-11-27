@@ -15,18 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Completion Progress block version details
+ * Completion Progress block event observers
  *
  * @package    block_completion_progress
- * @copyright  2018 Michael de Raadt
+ * @copyright  2025 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-/** @var object $plugin */
-$plugin->component = 'block_completion_progress';
-$plugin->version   = 2023110101;
-$plugin->requires  = 2022112800;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'Version for Moodle 4.1 onwards';
+$observers = [
+    [
+        'eventname'   => '\core\event\course_module_completion_updated',
+        'callback'    => 'block_completion_progress\observer::course_module_completion_updated',
+    ],
+    [
+        'eventname'   => '\core\event\course_module_created',
+        'callback'    => 'block_completion_progress\observer::course_module_modified',
+    ],
+    [
+        'eventname'   => '\core\event\course_module_deleted',
+        'callback'    => 'block_completion_progress\observer::course_module_modified',
+    ],
+    [
+        'eventname'   => '\core\event\course_module_updated',
+        'callback'    => 'block_completion_progress\observer::course_module_modified',
+    ],
+];

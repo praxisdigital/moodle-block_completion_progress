@@ -27,8 +27,8 @@ namespace block_completion_progress;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/mod/quiz/lib.php');
-require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 use block_completion_progress\completion_progress;
 use block_completion_progress\defaults;
@@ -46,7 +46,7 @@ if (!class_exists('mod_quiz\quiz_settings')) {
  * @copyright  2020 Jonathon Fowler <fowlerj@usq.edu.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class quiz_completion_test extends \block_completion_progress\tests\completion_testcase {
+final class quiz_completion_test extends \block_completion_progress\tests\completion_testcase {
     /**
      * A data provider supplying each of the possible quiz grade methods.
      * @return array
@@ -76,11 +76,11 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
             'course' => $this->course->id,
             'grade' => 100,
             'sumgrades' => 100,
-            'layout' => '1,0',  // One question.
+            'layout' => '1,0', // One question.
             'attempts' => -1,
             'grademethod' => $grademethod,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // Student must receive a grade to complete.
+            'completionusegrade' => 1, // Student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('quiz', $instance->cmid);
@@ -159,11 +159,11 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
             'course' => $this->course->id,
             'grade' => 100,
             'sumgrades' => 100,
-            'layout' => '1,0',  // One question.
+            'layout' => '1,0', // One question.
             'attempts' => -1,
             'grademethod' => $grademethod,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionusegrade' => 1,      // Student must receive a grade to complete.
+            'completionusegrade' => 1, // Student must receive a grade to complete.
             'completionexpected' => time() - DAYSECS,
         ]);
         $cm = get_coursemodule_from_id('quiz', $instance->cmid);
@@ -254,7 +254,10 @@ class quiz_completion_test extends \block_completion_progress\tests\completion_t
 
         $quba = $attemptobj->get_question_usage();
         $quba->get_question_attempt(1)->manual_grade(
-                'Comment', $mark, FORMAT_HTML);
+            'Comment',
+            $mark,
+            FORMAT_HTML
+        );
         \question_engine::save_questions_usage_by_activity($quba);
 
         $update = new \stdClass();
