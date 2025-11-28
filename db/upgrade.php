@@ -56,9 +56,9 @@ function xmldb_block_completion_progress_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025011600, 'block', 'completion_progress');
     }
 
-    if ($oldversion < 2025112800) {
+    if ($oldversion < 2025090200) {
         $dbman->install_from_xmldb_file(__DIR__ . '/install.xml');
-        upgrade_plugin_savepoint(true, 2025112800, 'block', 'completion_progress');
+        upgrade_plugin_savepoint(true, 2025090200, 'block', 'completion_progress');
     }
 
     return true;
