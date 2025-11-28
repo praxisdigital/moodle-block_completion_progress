@@ -145,8 +145,8 @@ if ($ADMIN->fulltree) {
             'block_completion_progress/max_modules',
             get_string('max_modules', 'block_completion_progress'),
             get_string('max_modules_desc', 'block_completion_progress'),
-        0,
-        PARAM_INT
+            0,
+            PARAM_INT
         )
     );
 }
